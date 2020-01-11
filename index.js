@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const readlineSync = require('readline-sync');
-const noble = require('noble');
+const noble = require('@abandonware/noble');
 const log = require('debug')('am43*');
 const debugLog = require('debug')('am43');
 const am43 = require('./src/am43');

@@ -2,7 +2,7 @@
 Util for controlling a am43 Cover, either over MQTT or via a HTTP API. When used over MQTT it works together with home-assistant and performs auto disovery configuration of the cover component.
 (Eg. https://nl.aliexpress.com/item/4000106179323.html)
 
-#Hardware Installation
+# Hardware Installation
 Install the blinds and configure top and bottom positions through the BlindsEngine App.
 Retrieve the MacAddress of the device (for example by using nRF Connect app for android)
 
