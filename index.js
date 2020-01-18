@@ -99,6 +99,8 @@ if (expressPort) {
     new WebBinding(devices, expressPort, debugLog);
 }
 
+noble.on('warning', (message) => {debugLog(message)});
+
 noble.on('discover', peripheral => {
     let id = peripheral.address !== undefined ? peripheral.address.replace(/:/g, '') : undefined;
 
