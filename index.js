@@ -115,11 +115,11 @@ noble.on('discover', peripheral => {
         log('all expected devices connected, stopping scan');
         noble.stopScanning();
 
-        if (mqttUrl) {
-            new mqttBinding(devices[id], mqttUrl, baseTopic, mqttUsername, mqttPassword);
-        }
-
-        Object.values(devices).forEach((device) => {device.am43Init();});
+        Object.values(devices).forEach((device) => {
+            if (mqttUrl) {
+                new mqttBinding(device, mqttUrl, baseTopic, mqttUsername, mqttPassword);
+            }
+            device.am43Init();});
     }
 
 
