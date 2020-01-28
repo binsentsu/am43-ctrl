@@ -35,7 +35,7 @@
     "debug": "^4.0.1",
     "express": "^4.16.3",
     "mqtt": "^2.18.2",
-    "@abandonware/noble": "^1.9.2-1",
+    "@abandonware/noble": "^1.9.2-5",
     "readline-sync": "^1.4.9",
     "yargs": "^13.2.2"
   },
