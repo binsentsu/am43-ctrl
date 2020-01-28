@@ -1,6 +1,7 @@
 const mqtt = require('mqtt');
 
 const coverTopic = 'cover/';
+const sensorTopic = 'sensor/';
 
 class MQTTConnector {
     constructor(device, mqttUrl, baseTopic, username, password) {
@@ -15,6 +16,7 @@ class MQTTConnector {
         });
 
         let deviceTopic = `${baseTopic}${coverTopic}${device.id}`;
+        let deviceSensorConfigTopic = `${baseTopic}${sensorTopic}${device.id}`;
         mqttClient.subscribe([`${deviceTopic}/set`]);
 
         mqttClient.on('message', (topic, message) => {
@@ -56,18 +58,32 @@ class MQTTConnector {
             device: deviceInfo
         };
 
+        let batterySensorConfig = {
+            name: device.id + ' Battery',
+            state_topic: `${deviceTopic}/state`,
+            availability_topic: `${deviceTopic}/connection`,
+            payload_available: 'Online',
+            payload_not_available: 'Offline',
+            unique_id: `am43_${device.id}_battery_sensor`,
+            device: deviceInfo,
+            value_template: '{{value_json[\'battery\']}}',
+            device_class: 'battery',
+            unit_of_measurement: '%'
+        };
+
         device.log(`mqtt topic ${deviceTopic}`);
 
         device.on('initPerformed', (data) => {
             coverConfig.name = data.id;
             coverConfig.device.name = data.id;
             mqttClient.publish(`${deviceTopic}/config`, JSON.stringify(coverConfig), {retain: true});
+            mqttClient.publish(`${deviceSensorConfigTopic}/config`, JSON.stringify(batterySensorConfig), {retain: true});
             mqttClient.publish(`${deviceTopic}/connection`, 'Online', {retain:true});
         });
 
         device.on('stateChanged', (data) => {
-            device.log(`state changed received to ${data.state}`);
-            // mqttClient.publish(`${deviceTopic}/state`, data.state, {retain:true});
+            device.log(`state changed received: ${JSON.stringify(data)}`);
+            mqttClient.publish(`${deviceTopic}/state`, JSON.stringify(data), {retain:true});
         });
 
         mqttClient.on('connect', () => device.log('mqtt connected'));
