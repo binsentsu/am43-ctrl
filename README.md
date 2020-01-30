@@ -9,6 +9,9 @@ Retrieve the MacAddress of the device (for example by using nRF Connect app for 
 # Installation
 Run `npm install -g https://github.com/binsentsu/am43-ctrl`
 
+For making the application persistent across device reboots a possibility is to use pm2:
+https://www.npmjs.com/package/pm2
+
 # Usage
 `am43ctrl` by itself will print usage information
 
@@ -43,25 +46,69 @@ STOP: `<baseTopic>/cover/<deviceID>/set` - message: 'STOP'
 
 In addition, for use with [Home Assistant MQTT Discovery](https://www.home-assistant.io/docs/mqtt/discovery/):
 
-To automatically setup the switch device:
-`<baseTopic>/config/<deviceID>/config` will be set to, e.g.:
+Three entities will be pubished to homeassistant discovery topic:
+
 ```
+Cover: 
+
 {
     "name": "MAC",
-    "availability_topic": "homeassistant/config/MACx/connection",
+    "availability_topic": "homeassistant/cover/MACx/connection",
     "payload_available": "Online",
     "payload_not_available": "Offline",
     "command_topic": "homeassistant/cover/MACx/set",
+    "position_topic": "homeassistant/cover/MACx/state",
+    "position_open": 0,
+    "position_closed": 100,
     "payload_open": "OPEN",
     "payload_close": "CLOSE",
     "payload_stop": "STOP",
     "unique_id": "am43_MACx_cover",
+    "value_template": '{{value_json[\'position\']}}',
     "device": {
         "identifiers": "am43_MACx",
         "name": "MACx",
         "manufacturer": "Generic AM43"
     }
 }
+
+Battery Sensor:
+
+{
+    "name": "MAC Battery",
+    "availability_topic": "homeassistant/cover/MACx/connection",
+    "state_topic": "homeassistant/cover/MACx/state
+    "payload_available": "Online",
+    "payload_not_available": "Offline",
+    "device_class" : "battery",
+    "unit_of_measurement": "%",
+    "unique_id": "am43_MACx_battery_sensor",
+    "value_template": '{{value_json[\'battery\']}}',
+    "device": {
+        "identifiers": "am43_MACx",
+        "name": "MACx",
+        "manufacturer": "Generic AM43"
+    }
+}
+
+Light Sensor:
+
+{
+    "name": "MAC Battery",
+    "availability_topic": "homeassistant/cover/MACx/connection",
+    "state_topic": "homeassistant/cover/MACx/state
+    "payload_available": "Online",
+    "payload_not_available": "Offline",
+    "unit_of_measurement": "%",
+    "unique_id": "am43_MACx_light_sensor",
+    "value_template": '{{value_json[\'light\']}}',
+    "device": {
+        "identifiers": "am43_MACx",
+        "name": "MACx",
+        "manufacturer": "Generic AM43"
+    }
+}
+
 ```
 
 ## Parameters
@@ -78,7 +125,11 @@ Response type: `[String : Device]` - ID as String key, Device as value
    "c03dc8105277":{
       "id":"c03dc8105277",
       "lastconnect":"2019-11-23T17:39:48.949Z",
-      "lastaction":"OPEN"
+      "lastaction":"OPEN",
+      "state":"OPEN",
+      "battery":42,
+      "light":0,
+      "position":0
    }
 }
 ```
@@ -90,7 +141,11 @@ Response type: `Device` example:
 {
    "id":"c03dc8105277",
    "lastconnect":"2019-11-23T17:39:48.949Z",
-   "lastaction":"OPEN"
+   "lastaction":"OPEN",
+   "state":"OPEN",
+   "battery":42,
+   "light":0,
+   "position":0
 }
 ```
 

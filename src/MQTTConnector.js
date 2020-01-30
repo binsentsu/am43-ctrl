@@ -16,7 +16,8 @@ class MQTTConnector {
         });
 
         let deviceTopic = `${baseTopic}${coverTopic}${device.id}`;
-        let deviceSensorConfigTopic = `${baseTopic}${sensorTopic}${device.id}`;
+        let deviceBatterySensorConfigTopic = `${baseTopic}${sensorTopic}${device.id}_battery`;
+        let deviceLightSensorConfigTopic = `${baseTopic}${sensorTopic}${device.id}_light`;
         mqttClient.subscribe([`${deviceTopic}/set`]);
 
         mqttClient.on('message', (topic, message) => {
@@ -45,15 +46,16 @@ class MQTTConnector {
         let coverConfig = {
             name: device.id,
             command_topic: `${deviceTopic}/set`,
-            // state_topic: `${deviceTopic}/state`,
-            // state_open: 'OPEN',
-            // state_closed: 'CLOSED',
+            position_topic: `${deviceTopic}/state`,
+            position_open: 0,
+            position_closed: 100,
             availability_topic: `${deviceTopic}/connection`,
             payload_available: 'Online',
             payload_not_available: 'Offline',
             payload_open: 'OPEN',
             payload_close: 'CLOSE',
             payload_stop: 'STOP',
+            value_template: '{{value_json[\'position\']}}',
             unique_id: `am43_${device.id}_cover`,
             device: deviceInfo
         };
@@ -71,13 +73,26 @@ class MQTTConnector {
             unit_of_measurement: '%'
         };
 
+        let lightSensorConfig = {
+            name: device.id + ' Light',
+            state_topic: `${deviceTopic}/state`,
+            availability_topic: `${deviceTopic}/connection`,
+            payload_available: 'Online',
+            payload_not_available: 'Offline',
+            unique_id: `am43_${device.id}_light_sensor`,
+            device: deviceInfo,
+            value_template: '{{value_json[\'light\']}}',
+            unit_of_measurement: '%'
+        };
+
         device.log(`mqtt topic ${deviceTopic}`);
 
         device.on('initPerformed', (data) => {
             coverConfig.name = data.id;
             coverConfig.device.name = data.id;
             mqttClient.publish(`${deviceTopic}/config`, JSON.stringify(coverConfig), {retain: true});
-            mqttClient.publish(`${deviceSensorConfigTopic}/config`, JSON.stringify(batterySensorConfig), {retain: true});
+            mqttClient.publish(`${deviceBatterySensorConfigTopic}/config`, JSON.stringify(batterySensorConfig), {retain: true});
+            mqttClient.publish(`${deviceLightSensorConfigTopic}/config`, JSON.stringify(lightSensorConfig), {retain: true});
             mqttClient.publish(`${deviceTopic}/connection`, 'Online', {retain:true});
         });
 

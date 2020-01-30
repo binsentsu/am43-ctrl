@@ -13,6 +13,14 @@ const HEX_KEY_CLOSE_BLINDS = "00ff00009a0d0164f2";
 const HEX_KEY_STOP_BLINDS = "00ff00009a0a01cc5d";
 
 const HEX_KEY_BATTERY_REQUEST = "00ff00009aa2010138";
+const HEY_KEY_LIGHT_REQUEST = "00ff00009aaa010130";
+const HEY_KEY_POSITION_REQUEST = "00ff00009aa701013d";
+
+const batteryNotificationIdentifier = "a2";
+const positionNotificationIdentifier = "a7";
+const lightNotificationIdentifier = "aa";
+
+const fullMovingTime = 137000;
 
 class am43 extends EventEmitter {
     static busyDevice = null;
@@ -30,7 +38,11 @@ class am43 extends EventEmitter {
         this.maxRetries = 30;
         this.success = false;
         this.batterysuccess = false;
+        this.lightsuccess = false;
+        this.positionsuccess = false;
         this.batterypercentage = null;
+        this.lightpercentage = null;
+        this.positionpercentage = null;
 
         Object.defineProperty(this, '_init', {
             set: function (state) {
@@ -43,15 +55,22 @@ class am43 extends EventEmitter {
         this.log(pLogLine);
     }
 
-    readBattery() {
-        if (am43.busyDevice != null && am43.busyDevice.id !== this.id) {
-            this.writeLog('Connection busy for other device, delaying battery read...');
+    readData() {
+        if (am43.busyDevice != null) {
+            this.writeLog('Connection busy for other device, delaying data read...');
             setTimeout(() => {
-                this.readBattery()
+                this.readData()
             }, 1000);
             return;
         }
+
+        this.performReadData();
+    }
+
+    performReadData() {
         this.batterysuccess = false;
+        this.positionsuccess = false;
+        this.lightsuccess = false;
         am43.busyDevice = this;
 
         this.peripheral.connect();
@@ -61,7 +80,7 @@ class am43 extends EventEmitter {
 
         function handleDeviceConnected() {
             self.connecttime = new Date();
-            self.writeLog('AM43 connected for battery reading');
+            self.writeLog('AM43 connected for data reading');
             var characteristicUUIDs = [NOBLE_BAT_CHAR_UID];
             var serviceUID = [NOBLE_SERVICE_UID];
             self.peripheral.removeAllListeners('servicesDiscover');
@@ -69,22 +88,22 @@ class am43 extends EventEmitter {
         }
 
         function disconnectMe() {
-            self.writeLog('disconnected for battery reading');
+            self.writeLog('disconnected for data reading');
 
-            if (self.batterysuccess === false) {
+            if (self.batterysuccess === false || self.positionsuccess === false || self.lightsuccess === false) {
                 if (self.currentRetry < self.maxRetries) {
-                    self.writeLog("Reading battery unsuccessful, retrying in 1 second...");
+                    self.writeLog("Reading data unsuccessful, retrying in 1 second...");
                     self.currentRetry = self.currentRetry + 1;
                     setTimeout(() => {
-                        self.readBattery()
+                        self.performReadData()
                     }, 1000);
                 } else {
-                    self.writeLog("Reading battery unsuccessful, giving up...");
+                    self.writeLog("Reading data unsuccessful, giving up...");
                     am43.busyDevice = null;
                     self.currentRetry = 0;
                 }
             } else {
-                self.writeLog("Reading battery was successful");
+                self.writeLog("Reading data was successful");
                 am43.busyDevice = null;
                 self.currentRetry = 0;
                 self.emit('stateChanged', self.getState());
@@ -96,7 +115,7 @@ class am43 extends EventEmitter {
                 self.writeLog("ERROR retrieving characteristic");
                 self.peripheral.disconnect();
             } else {
-                self.writeLog('discovered battery char');
+                self.writeLog('discovered data char');
                 let characteristic = characteristics[0];
                 characteristic.on('data', function (data, isNotification) {
                     self.writeLog('received characteristic update');
@@ -104,34 +123,71 @@ class am43 extends EventEmitter {
                     let bfr = Buffer.from(data, "hex");
                     //convert to hex string
                     let strBfr = bfr.toString("hex", 0, bfr.length);
-                    //battery is hexadecimal on position 14, 2 bytes
-                    let batteryHex = strBfr.substr(14, 2);
-                    //convert hex number to integer
-                    let batteryPercentage = parseInt(batteryHex, 16);
-                    self.writeLog('Bat %: ' + batteryPercentage);
-                    self.batterypercentage = batteryPercentage;
+                    self.writeLog('Notification data: ' + strBfr);
+                    let notificationIdentifier = strBfr.substr(2, 2);
+                    self.writeLog('Notification identifier: ' + notificationIdentifier);
+                    if (batteryNotificationIdentifier === notificationIdentifier) {
+                        //battery is hexadecimal on position 14, 2 bytes
+                        let batteryHex = strBfr.substr(14, 2);
+                        //convert hex number to integer
+                        let batteryPercentage = parseInt(batteryHex, 16);
+                        self.writeLog('Bat %: ' + batteryPercentage);
+                        self.batterypercentage = batteryPercentage;
+                        self.batterysuccess = true;
 
-                    self.batterysuccess = true;
-                    setTimeout(() => {
-                        self.peripheral.disconnect();
-                    }, 1000);
+                        //write cmd to enable light notification
+                        characteristic.write(Buffer.from(HEY_KEY_LIGHT_REQUEST, "hex"), true);
+                    } else if (lightNotificationIdentifier === notificationIdentifier) {
+                        //light is byte 4 (ex. 9a aa 02 00 00 32)
+                        let lightHex = strBfr.substr(8, 2);
+                        //convert to integer
+                        let lightPercentage = parseInt(lightHex, 16);
+                        self.writeLog('Light %: ' + lightPercentage);
+                        self.lightpercentage = lightPercentage;
+                        self.lightsuccess = true;
+
+                        //write cmd to get position
+                        characteristic.write(Buffer.from(HEY_KEY_POSITION_REQUEST, "hex"), true);
+                    } else if (positionNotificationIdentifier === notificationIdentifier) {
+                        //position is byte 6: 9a a7 07 0f 32 4e 00 00 00 30 79
+                        let positionHex = strBfr.substr(10, 2);
+                        //convert to integer
+                        let positionPercentage = parseInt(positionHex, 16);
+                        self.writeLog('Position %: ' + positionPercentage);
+                        self.positionpercentage = positionPercentage;
+                        self.positionsuccess = true;
+                        self.reevaluateState();
+                    }
+
+                    if (self.batterysuccess && self.lightsuccess && self.positionsuccess) {
+                        self.writeLog("Reading data completed");
+                        characteristic.unsubscribe();
+                        setTimeout(() => {
+                            self.peripheral.disconnect();
+                        }, 1000);
+                    }
                 });
                 //subscribe to notifications on the char
                 characteristic.subscribe();
-                //write cmd to enable notifications
+                //write cmd to enable battery notification
                 characteristic.write(Buffer.from(HEX_KEY_BATTERY_REQUEST, "hex"), true);
             }
         }
     }
 
     writeKey(handle, key) {
-        if (am43.busyDevice != null && am43.busyDevice.id !== this.id) {
+        if (am43.busyDevice != null) {
             this.writeLog('Connection busy for other device, waiting...');
             setTimeout(() => {
                 this.writeKey(handle, key)
             }, 1000);
             return;
         }
+
+        this.performWriteKey(handle, key);
+    }
+
+    performWriteKey(handle, key) {
         this.success = false;
         am43.busyDevice = this;
         this.peripheral.connect();
@@ -152,7 +208,7 @@ class am43 extends EventEmitter {
                     self.writeLog("Writing unsuccessful, retrying in 1 second...");
                     self.currentRetry = self.currentRetry + 1;
                     setTimeout(() => {
-                        self.writeKey(handle, key)
+                        self.performWriteKey(handle, key)
                     }, 1000);
                 } else {
                     self.writeLog("Writing unsuccessful, giving up...");
@@ -164,6 +220,7 @@ class am43 extends EventEmitter {
                 am43.busyDevice = null;
                 self.currentRetry = 0;
                 self.emit('stateChanged', self.getState());
+                self.scheduleForcedDataRead();
             }
         }
 
@@ -186,18 +243,41 @@ class am43 extends EventEmitter {
         const self = this;
 
         setTimeout(() => {
-            self.readBattery()
+            self.readData()
         }, 5000);
 
         const interval = this.randomIntMinutes(10, 20);
         this.writeLog("interval: " + interval);
         setInterval(() => {
-            self.readBattery();
+            self.readData();
         }, interval);
+    }
+
+    scheduleForcedDataRead() {
+        const self = this;
+        //we read data after 15 seconds (eg. to capture pretty fast the open state)
+        setTimeout(() => {
+            self.readData()
+        }, 15000);
+
+        //we read data after fullMovingTime + 5 seconds buffer (eg. to capture the closed state/end position when movement is complete)
+        setTimeout(() => {
+            self.readData()
+        }, fullMovingTime + 5000);
+
+        //else we still have our 'slower' backup task which will provide updated data at later time
     }
 
     randomIntMinutes(min, max) {
         return 1000 * 60 * (Math.floor(Math.random() * (max - min + 1) + min));
+    }
+
+    reevaluateState() {
+        if (this.positionpercentage === 100) {
+            this.state = 'CLOSED';
+        } else {
+            this.state = 'OPEN';
+        }
     }
 
     am43Open() {
@@ -224,7 +304,9 @@ class am43 extends EventEmitter {
             lastconnect: this.connecttime,
             lastaction: this.lastaction,
             state: this.state,
-            battery: this.batterypercentage
+            battery: this.batterypercentage,
+            light: this.lightpercentage,
+            position: this.positionpercentage
         };
     }
 }
