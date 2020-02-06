@@ -43,12 +43,6 @@ class am43 extends EventEmitter {
         this.batterypercentage = null;
         this.lightpercentage = null;
         this.positionpercentage = null;
-
-        Object.defineProperty(this, '_init', {
-            set: function (state) {
-                this.emit('initPerformed', this.getState());
-            }
-        });
     }
 
     writeLog(pLogLine) {
@@ -239,7 +233,6 @@ class am43 extends EventEmitter {
     }
 
     am43Init() {
-        this._init = true;
         const self = this;
 
         setTimeout(() => {

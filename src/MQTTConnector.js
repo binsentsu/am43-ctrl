@@ -87,23 +87,26 @@ class MQTTConnector {
 
         device.log(`mqtt topic ${deviceTopic}`);
 
-        device.on('initPerformed', (data) => {
-            coverConfig.name = data.id;
-            coverConfig.device.name = data.id;
-            mqttClient.publish(`${deviceTopic}/config`, JSON.stringify(coverConfig), {retain: true});
-            mqttClient.publish(`${deviceBatterySensorConfigTopic}/config`, JSON.stringify(batterySensorConfig), {retain: true});
-            mqttClient.publish(`${deviceLightSensorConfigTopic}/config`, JSON.stringify(lightSensorConfig), {retain: true});
-            mqttClient.publish(`${deviceTopic}/connection`, 'Online', {retain:true});
-        });
-
         device.on('stateChanged', (data) => {
             device.log(`state changed received: ${JSON.stringify(data)}`);
             mqttClient.publish(`${deviceTopic}/state`, JSON.stringify(data), {retain:true});
         });
 
-        mqttClient.on('connect', () => device.log('mqtt connected'));
+        mqttClient.on('connect', () => {
+            coverConfig.name = device.getState().id;
+            coverConfig.device.name = device.getState().id;
+
+            mqttClient.publish(`${deviceTopic}/config`, JSON.stringify(coverConfig), {retain: true});
+            mqttClient.publish(`${deviceBatterySensorConfigTopic}/config`, JSON.stringify(batterySensorConfig), {retain: true});
+            mqttClient.publish(`${deviceLightSensorConfigTopic}/config`, JSON.stringify(lightSensorConfig), {retain: true});
+            mqttClient.publish(`${deviceTopic}/connection`, 'Online', {retain:true});
+            device.log('mqtt connected')
+        });
         mqttClient.on('end', () => device.log('mqtt ended'));
         mqttClient.on('error', (e) => device.log('mqtt error %o', e));
+        mqttClient.on('offline', () => device.log('mqtt offline'));
+        mqttClient.on('close', () => device.log('mqtt close'));
+
     }
 }
 
