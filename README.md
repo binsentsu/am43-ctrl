@@ -8,26 +8,26 @@ Install the blinds and configure top and bottom positions through the BlindsEngi
 Retrieve the MacAddress of the device (for example by using nRF Connect app for android)
 
 # Installation
-Run `npm install -g https://github.com/binsentsu/am43-ctrl`
+Run `npm install https://github.com/binsentsu/am43-ctrl`
 
 For making the application persistent across device reboots a possibility is to use pm2:
 https://www.npmjs.com/package/pm2
 
 # Usage
-`am43ctrl` by itself will print usage information
+`sudo am43ctrl` by itself will print usage information
 
-You need to manually specify a list of MAC addresses to connect to, e.g.: `am43ctrl f5:11:7b:ee:f3:43`
+You need to manually specify a list of MAC addresses to connect to, e.g.: `sudo am43ctrl f5:11:7b:ee:f3:43`
 
 
 You must then specify options to use either MQTT, HTTP or both
 
 ## To use with HTTP
 Specify a port for the API to listen on with `-l`:
-`am43ctrl MACx MACy -l 3000`
+`sudo am43ctrl MACx MACy -l 3000`
 
 ## To use with MQTT
 Specify a broker URL with `--url` option:
-`am43ctrl --url mqtt://yourbroker` (mqtt/mqtts/ws/wss accepted)
+`sudo am43ctrl --url mqtt://yourbroker` (mqtt/mqtts/ws/wss accepted)
 
 Username and password for MQTT may be specified with `-u` and `-p` option
 
@@ -45,6 +45,11 @@ CLOSE: `<baseTopic>/cover/<deviceID>/set` - message: 'CLOSE'
 
 STOP: `<baseTopic>/cover/<deviceID>/set` - message: 'STOP'
 
+SET_POSITION: 
+100 is closed
+0 is open
+`<baseTopic>/cover/<deviceID>/setposition` - message: '21'
+
 In addition, for use with [Home Assistant MQTT Discovery](https://www.home-assistant.io/docs/mqtt/discovery/):
 
 Three entities will be pubished to homeassistant discovery topic:
@@ -59,6 +64,7 @@ Cover:
     "payload_not_available": "Offline",
     "command_topic": "homeassistant/cover/MACx/set",
     "position_topic": "homeassistant/cover/MACx/state",
+    "set_position_topic" : "homeassistant/cover/MACx/setposition",
     "position_open": 0,
     "position_closed": 100,
     "payload_open": "OPEN",
