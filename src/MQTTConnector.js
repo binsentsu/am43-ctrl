@@ -19,6 +19,7 @@ class MQTTConnector {
         let deviceBatterySensorConfigTopic = `${baseTopic}${sensorTopic}${device.id}_battery`;
         let deviceLightSensorConfigTopic = `${baseTopic}${sensorTopic}${device.id}_light`;
         mqttClient.subscribe([`${deviceTopic}/set`]);
+        mqttClient.subscribe([`${deviceTopic}/setposition`]);
 
         mqttClient.on('message', (topic, message) => {
             device.log('mqtt message received %o, %o', topic, message.toString());
@@ -35,6 +36,10 @@ class MQTTConnector {
                     device.am43Stop();
                 }
             }
+            else if(topic.endsWith('setposition') && message.length !== 0){
+                device.log('requesting position ' + message);
+                device.am43GotoPosition(parseInt(message, 10))
+            }
         });
 
         let deviceInfo = {
@@ -47,6 +52,7 @@ class MQTTConnector {
             name: device.id,
             command_topic: `${deviceTopic}/set`,
             position_topic: `${deviceTopic}/state`,
+            set_position_topic: `${deviceTopic}/setposition`,
             position_open: 0,
             position_closed: 100,
             availability_topic: `${deviceTopic}/connection`,

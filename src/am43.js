@@ -12,6 +12,9 @@ const HEX_KEY_OPEN_BLINDS = "00ff00009a0d010096";
 const HEX_KEY_CLOSE_BLINDS = "00ff00009a0d0164f2";
 const HEX_KEY_STOP_BLINDS = "00ff00009a0a01cc5d";
 
+const HEX_KEY_POSITION_BLINDS_PREFIX = "00ff0000";
+const HEY_KEY_POSITION_BLIND_FIXED_CRC_CONTENT = "9a0d01";
+
 const HEX_KEY_BATTERY_REQUEST = "00ff00009aa2010138";
 const HEY_KEY_LIGHT_REQUEST = "00ff00009aaa010130";
 const HEY_KEY_POSITION_REQUEST = "00ff00009aa701013d";
@@ -289,6 +292,31 @@ class am43 extends EventEmitter {
         this.writeKey(AM43HANDLE, HEX_KEY_STOP_BLINDS);
         this.lastaction = 'STOP';
         this.state = 'OPEN';
+    }
+
+    am43GotoPosition(position)
+    {
+        var positionHex = position.toString(16);
+        if(positionHex.length === 1)
+        {
+            positionHex = "0" + positionHex;
+        }
+        var buffer = Buffer.from(HEY_KEY_POSITION_BLIND_FIXED_CRC_CONTENT + positionHex, "hex");
+        var crc = buffer[0];
+        for (var i=1; i<buffer.length; i++) {
+            crc = crc ^ buffer[i];
+        }
+
+        this.writeKey(AM43HANDLE, HEX_KEY_POSITION_BLINDS_PREFIX + HEY_KEY_POSITION_BLIND_FIXED_CRC_CONTENT + positionHex + crc.toString(16));
+        this.lastaction = 'SET_POSITION';
+        if(position === 100)
+        {
+            this.state = 'CLOSED';
+        }
+        else
+        {
+            this.STATE = 'OPEN';
+        }
     }
 
     getState() {
