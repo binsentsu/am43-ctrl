@@ -1,6 +1,6 @@
 {
   "name": "am43-ctrl",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Control an AM43 Blinds Engine by HTTP or MQTT",
   "main": "index.js",
   "bin": {
@@ -29,7 +29,7 @@
   },
   "homepage": "https://github.com/binsentsu/am43-ctrl#readme",
   "engines": {
-    "node": ">=8.16.0 <13.0"
+    "node": ">=10.16.0 <13.0"
   },
   "dependencies": {
     "debug": "^4.0.1",
