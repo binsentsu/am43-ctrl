@@ -5,7 +5,10 @@ This util should work with all blind drives which make use of the Blind Engine A
 
 # Hardware Installation
 Install the blinds and configure top and bottom positions through the BlindsEngine App.
-Retrieve the MacAddress of the device (for example by using nRF Connect app for android)
+Retrieve the MacAddress of the device (for example by using nRF Connect app for android or `sudo bluetoothctl` and `scan on`)
+
+# Requirements
+`sudo apt install libudev-dev`
 
 # Installation
 Run `npm install https://github.com/binsentsu/am43-ctrl`
@@ -63,7 +66,7 @@ Username and password for MQTT may be specified with `-u` and `-p` option
 
 If no password argument is supplied, you can enter it interactively
 
-Base topic defaults to `homeassistant`, but may be configured with the `-topic` option
+Base topic defaults to `homeassistant`, but may be configured with the `--topic` option
 
 
 # MQTT
