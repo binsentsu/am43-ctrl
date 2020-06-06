@@ -13,6 +13,36 @@ Run `npm install https://github.com/binsentsu/am43-ctrl`
 For making the application persistent across device reboots a possibility is to use pm2:
 https://www.npmjs.com/package/pm2
 
+Or by using native systemd:
+
+- create file am43ctrl.service in /etc/systemd/system :
+```
+[Unit]
+Description=AM43-ctrl
+After=multi-user.target
+
+[Service]
+ExecStart=/AM43DIRECTORY/node_modules/.bin/am43ctrl MAC1 MAC12 -l 3001 -d --url mqtt://BROKERIP -u BROKERUSER -p BROKERPASS -d
+Restart=always
+User=root
+Environment=PATH=/usr/bin:/usr/local/bin
+Environment=NODE_ENV=production
+WorkingDirectory=/AM43DIRECTORY
+
+[Install]
+WantedBy=multi-user.target
+```
+Then use following commands to persist:
+
+```
+sudo systemctl daemon-reload
+sudo systemctl enable am43ctrl
+sudo systemctl start am43ctrl
+```
+
+You can obtain logging through:
+`sudo journalctl -u am43ctrl.service`
+
 # Usage
 `sudo am43ctrl` by itself will print usage information
 
