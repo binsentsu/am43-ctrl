@@ -56,7 +56,7 @@ if (argv.p === true) {
     argv.p = readlineSync.question('MQTT Password: ', {hideEchoBack: true, mask: ''});
 }
 
-const idsToConnectTo = argv._.filter(name => !name.startsWith('_')).map(name => name.replace(/:/g, ''));
+const idsToConnectTo = argv._.filter(name => !name.startsWith('_')).map(name => name.replace(/:/g, '').toLowerCase());
 
 if(idsToConnectTo.length === 0)
 {
@@ -102,7 +102,7 @@ if (expressPort) {
 noble.on('warning', (message) => {debugLog(message)});
 
 noble.on('discover', peripheral => {
-    let id = peripheral.address !== undefined ? peripheral.address.replace(/:/g, '') : undefined;
+    let id = peripheral.address !== undefined ? peripheral.address.replace(/:/g, '').toLowerCase() : undefined;
 
     if (idsToConnectTo.indexOf(id) === -1) {
         debugLog('Found %s but will not connect as it was not specified in the list of devices %o', id, idsToConnectTo);
