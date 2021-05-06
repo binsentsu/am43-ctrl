@@ -61,7 +61,7 @@ class MQTTConnector {
             payload_open: 'OPEN',
             payload_close: 'CLOSE',
             payload_stop: 'STOP',
-            value_template: '{{value_json[\'position\']}}',
+            position_template: '{{value_json[\'position\']}}',
             unique_id: `am43_${device.id}_cover`,
             device: deviceInfo
         };
@@ -74,7 +74,7 @@ class MQTTConnector {
             payload_not_available: 'Offline',
             unique_id: `am43_${device.id}_battery_sensor`,
             device: deviceInfo,
-            value_template: '{{value_json[\'battery\']}}',
+            position_template: '{{value_json[\'battery\']}}',
             device_class: 'battery',
             unit_of_measurement: '%'
         };
@@ -87,7 +87,7 @@ class MQTTConnector {
             payload_not_available: 'Offline',
             unique_id: `am43_${device.id}_light_sensor`,
             device: deviceInfo,
-            value_template: '{{value_json[\'light\']}}',
+            position_template: '{{value_json[\'light\']}}',
             unit_of_measurement: '%'
         };
 
