@@ -35,6 +35,7 @@ class am43 extends EventEmitter {
         this.peripheral = peripheral;
         this.noble = noble;
         this.connecttime = null;
+        this.successtime = null;
         this.lastaction = null;
         this.state = null;
         this.currentRetry = 0;
@@ -54,7 +55,7 @@ class am43 extends EventEmitter {
 
     readData() {
         if (am43.busyDevice != null) {
-            this.writeLog('Connection busy for other device, delaying data read...');
+            this.writeLog('Connection busy for other device ' +  am43.busyDevice.id + ', delaying data read...');
             setTimeout(() => {
                 this.readData()
             }, 1000);
@@ -101,6 +102,7 @@ class am43 extends EventEmitter {
                 }
             } else {
                 self.writeLog("Reading data was successful");
+                self.successtime = new Date();
                 am43.busyDevice = null;
                 self.currentRetry = 0;
                 self.emit('stateChanged', self.getState());
@@ -235,14 +237,21 @@ class am43 extends EventEmitter {
         }
     }
 
-    am43Init() {
+    am43Init(poll = 0) {
         const self = this;
 
         setTimeout(() => {
             self.readData()
         }, 5000);
 
-        const interval = this.randomIntMinutes(10, 20);
+        // FUTURE: User input validation - TBD
+        if ( poll > 0 ) { 
+            var intervalMS = (3 * 1000 * 60);
+        } else {
+            var intervalMS = this.randomIntMinutes(10, 20);
+        }
+
+        const interval = intervalMS;
         this.writeLog("interval: " + interval);
         setInterval(() => {
             self.readData();
@@ -323,6 +332,7 @@ class am43 extends EventEmitter {
         return {
             id: this.id,
             lastconnect: this.connecttime,
+            lastsuccess: this.successtime,
             lastaction: this.lastaction,
             state: this.state,
             battery: this.batterypercentage,
