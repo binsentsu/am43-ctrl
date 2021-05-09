@@ -75,7 +75,7 @@ Bluetooth polling interval is randomly selected at startup (10-20 minutes), but 
 
 A minimum successfull connection 'fail-time' can be defined with `-f` option:
 `sudo am43ctrl MACx MACy -l 3000 -f 120000`
-If no valid connection with a device occurs during <fail-time> seconds, the program will exit.
+If no valid connection with a device occurs during <fail-time> seconds, the program will exit. Disabled by default.
 
 Base topic defaults to `homeassistant`, but may be configured with the `-topic` option
 
