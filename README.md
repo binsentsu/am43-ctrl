@@ -1,10 +1,3 @@
-# CHANGES FROM binsentsu
-```
-Adds watchdog for program exit if no valid connection within a user-defined time period (disabled by default)
-Adds watchdog for no device connection within 10 cycles at startup, otherwise exit
-Allows control over device polling interval, or defaults to current random 10-20 min cycle
-```
-
 # AM43 Blinds Drive Controller Util
 Util for controlling a am43 Cover, either over MQTT or via a HTTP API. When used over MQTT it works together with home-assistant and performs auto disovery configuration of the cover component.
 (Eg. https://nl.aliexpress.com/item/4000106179323.html)
