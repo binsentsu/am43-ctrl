@@ -1,0 +1,33 @@
+
+version: '3'
+services:
+
+  am43ctrl:
+
+    build:
+      context: "."
+      args:
+        - MAC_OPTIONS='02:91:67:e6:ca:0d'
+#        - MAC_OPTIONS="02:91:67:e6:ca:0d --express-port 3000"
+#        - MAC_OPTIONS='02:91:67:e6:ca:0d --express-port 3000'
+#        - ARG_MAC='02:91:67:e6:ca:0d --express-port 3000'
+#        - ENV_MAC='02:91:67:e6:ca:0d --express-port 3000'
+    container_name: "am43-ctrl"
+    privileged: true
+    network_mode: host
+#    ports:
+#      - "3000:3000"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+#    env_file:
+#    - data.env
+#    environment:
+#      - MACOPTIONS='02:91:67:e6:ca:0d --express-port 3000'
+#ENV MAC=02:5f:10:2f:ef:54
+#ENV MAC=02:91:67:e6:ca:0d
+#      - MACOPTIONS='02:91:67:e6:ca:0d -f 10 --url mqtts://rentonhomdom.duckdns.org -u user01 -p U3tEP8nHuEX --topic am43ctrl'
+
+
+    restart: "no"
+
+
