@@ -1,3 +1,10 @@
+# CHANGES FROM binsentsu
+```
+Adds watchdog for program exit if no valid connection within a user-defined time period (disabled by default)
+Adds watchdog for no device connection within 10 cycles at startup, otherwise exit
+Allows control over device polling interval, or defaults to current random 10-20 min cycle
+```
+
 # AM43 Blinds Drive Controller Util
 Util for controlling a am43 Cover, either over MQTT or via a HTTP API. When used over MQTT it works together with home-assistant and performs auto disovery configuration of the cover component.
 (Eg. https://nl.aliexpress.com/item/4000106179323.html)
@@ -62,6 +69,13 @@ Specify a broker URL with `--url` option:
 Username and password for MQTT may be specified with `-u` and `-p` option
 
 If no password argument is supplied, you can enter it interactively
+
+Bluetooth polling interval is randomly selected at startup (10-20 minutes), but can be defined with `-i` option:
+`sudo am43ctrl MACx MACy -l 3000 -i 10`
+
+A minimum successfull connection 'fail-time' can be defined with `-f` option:
+`sudo am43ctrl MACx MACy -l 3000 -f 120000`
+If no valid connection with a device occurs during <fail-time> seconds, the program will exit.
 
 Base topic defaults to `homeassistant`, but may be configured with the `-topic` option
 
