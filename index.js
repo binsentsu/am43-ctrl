@@ -5,6 +5,7 @@ const noble = require('@abandonware/noble');
 const log = require('debug')('am43*');
 const debugLog = require('debug')('am43');
 const am43 = require('./src/am43');
+const moment = require('moment');
 
 const yargs = require('yargs');
 const args = yargs
@@ -37,6 +38,18 @@ const args = yargs
         'u': {
             alias: 'mqtt-username',
             describe: 'Username for MQTT'
+        },
+        'i': {
+            alias: 'interval',
+            describe: 'Minutes interval for device polling (default is random 10 to 20)',
+            type: 'number',
+            default: 0
+        },
+        'f': {
+            alias: 'fail-time',
+            describe: 'Seconds since last successful device connection before program exit (default is never exit)',
+            type: 'number',
+            default: 0 
         }
     })
     .wrap(yargs.terminalWidth())
@@ -68,6 +81,8 @@ if(idsToConnectTo.length === 0)
 argv.expectedDevices = idsToConnectTo.length;
 
 let devices = {};
+var ids = [];
+var failConnectCount = 0;
 
 noble.on('stateChange', (state) => {
     if(state === 'poweredOn') {
@@ -80,6 +95,9 @@ if (argv.expectedDevices) {
 } else {
     log('scanning for as many devices until timeout');
 }
+
+let failTime = argv.f;
+let interval = argv.i;
 
 let baseTopic = argv.topic;
 if (!baseTopic.endsWith('/')) {
@@ -98,8 +116,44 @@ if (expressPort) {
     let WebBinding = require('./src/WebConnector');
     new WebBinding(devices, expressPort, debugLog);
 }
-
 noble.on('warning', (message) => {debugLog(message)});
+
+function intervalFunc() {
+  var now = moment();
+  lastSuccess = null;
+  // Get most recent successtime from any device
+  for (let id of ids) {
+     if ( lastSuccess == null ) {
+         lastSuccess = devices[id].successtime;
+     }
+     if ( devices[id].successtime > lastSuccess ) {
+         lastSuccess = devices[id].successtime;
+     }
+  };
+  if ( lastSuccess == null ) {
+     // No device has connected yet
+     failConnectCount++; 
+     lastSuccess = new Date();
+     if (failConnectCount > 10) {
+        log('Exiting since no device has every connected...');
+        process.exit(-2)
+     }
+
+  }
+  secondsDiff = now.diff(lastSuccess, 'seconds');
+  debugLog('Time since last successful connect: %s', secondsDiff);
+  if ((failTime > 0 ) && (secondsDiff > failTime)) {
+     log('Exiting since max time since last successful connection has elapsed...');
+     //noble.reset();
+
+// IN-WORK
+
+     process.exit(-3)
+  }
+}
+
+// Execute intervalFunc every minute
+setInterval(intervalFunc, 60000);
 
 noble.on('discover', peripheral => {
     let id = peripheral.address !== undefined ? peripheral.address.replace(/:/g, '').toLowerCase() : undefined;
@@ -113,6 +167,7 @@ noble.on('discover', peripheral => {
     if (argv.debug) {devices[id].log.enabled = true;}
 
     log('discovered %s', id);
+    ids.push(id);
     if (Object.keys(devices).length === argv.expectedDevices) {
         log('all expected devices connected, stopping scan');
         noble.stopScanning();
@@ -121,7 +176,7 @@ noble.on('discover', peripheral => {
             if (mqttUrl) {
                 new mqttBinding(device, mqttUrl, baseTopic, mqttUsername, mqttPassword);
             }
-            device.am43Init();});
+            device.am43Init(poll=interval);});
     }
 
 
