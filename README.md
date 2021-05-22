@@ -111,7 +111,7 @@ Cover:
     "payload_close": "CLOSE",
     "payload_stop": "STOP",
     "unique_id": "am43_MACx_cover",
-    "value_template": '{{value_json[\'position\']}}',
+    "position_template": '{{value_json[\'position\']}}',
     "device": {
         "identifiers": "am43_MACx",
         "name": "MACx",
