@@ -66,6 +66,13 @@ Username and password for MQTT may be specified with `-u` and `-p` option
 
 If no password argument is supplied, you can enter it interactively
 
+Bluetooth polling interval is randomly selected at startup (10-20 minutes), but can be defined with `-i` option:
+`sudo am43ctrl MACx MACy -l 3000 -i 10`
+
+A minimum successfull connection 'fail-time' can be defined with `-f` option:
+`sudo am43ctrl MACx MACy -l 3000 -f 120000`
+If no valid connection with a device occurs during <fail-time> seconds, the program will exit. Disabled by default.
+
 Base topic defaults to `homeassistant`, but may be configured with the `--topic` option
 
 
