@@ -1,6 +1,6 @@
 {
   "name": "am43-ctrl",
-  "version": "0.2.1",
+  "version": "1.0.0",
   "description": "Control an AM43 Blinds Engine by HTTP or MQTT",
   "main": "index.js",
   "bin": {
