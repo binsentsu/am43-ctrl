@@ -62,6 +62,10 @@ class MQTTConnector {
             payload_open: 'OPEN',
             payload_close: 'CLOSE',
             payload_stop: 'STOP',
+            state_open: "open",
+            state_opening: "opening",
+            state_closed: "closed",
+            state_closing: "closing",
             position_template: '{{value_json[\'position\']}}',
             unique_id: `am43_${device.id}_cover`,
             device: deviceInfo
