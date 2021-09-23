@@ -293,7 +293,7 @@ class am43 extends EventEmitter {
 
     am43Close() {
         this.writeKey(AM43HANDLE, HEX_KEY_CLOSE_BLINDS);
-        this.lastaction = 'closeing';
+        this.lastaction = 'closing';
         this.state = 'closed';
     }
 
