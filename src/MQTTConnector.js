@@ -50,6 +50,7 @@ class MQTTConnector {
 
         let coverConfig = {
             name: device.id,
+            state_topic: `${deviceTopic}/state`,
             command_topic: `${deviceTopic}/set`,
             position_topic: `${deviceTopic}/state`,
             set_position_topic: `${deviceTopic}/setposition`,
@@ -61,7 +62,13 @@ class MQTTConnector {
             payload_open: 'OPEN',
             payload_close: 'CLOSE',
             payload_stop: 'STOP',
+            state_open: "open",
+            state_opening: "opening",
+            state_closed: "closed",
+            state_closing: "closing",
+            state_stopped: "stopped",
             position_template: '{{value_json[\'position\']}}',
+            value_template: '{{value_json[\'state\']}}',
             unique_id: `am43_${device.id}_cover`,
             device: deviceInfo
         };
