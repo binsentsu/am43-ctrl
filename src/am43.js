@@ -279,28 +279,28 @@ class am43 extends EventEmitter {
 
     reevaluateState() {
         if (this.positionpercentage === 100) {
-            this.state = 'CLOSED';
+            this.state = 'closed';
         } else {
-            this.state = 'OPEN';
+            this.state = 'open';
         }
     }
 
     am43Open() {
         this.writeKey(AM43HANDLE, HEX_KEY_OPEN_BLINDS);
-        this.lastaction = 'OPEN';
-        this.state = 'OPEN';
+        this.lastaction = 'opening';
+        this.state = 'open';
     }
 
     am43Close() {
         this.writeKey(AM43HANDLE, HEX_KEY_CLOSE_BLINDS);
-        this.lastaction = 'CLOSE';
-        this.state = 'CLOSED';
+        this.lastaction = 'closeing';
+        this.state = 'closed';
     }
 
     am43Stop() {
         this.writeKey(AM43HANDLE, HEX_KEY_STOP_BLINDS);
-        this.lastaction = 'STOP';
-        this.state = 'OPEN';
+        this.lastaction = 'stopped';
+        this.state = 'open';
     }
 
     am43GotoPosition(position)
@@ -320,11 +320,11 @@ class am43 extends EventEmitter {
         this.lastaction = 'SET_POSITION';
         if(position === 100)
         {
-            this.state = 'CLOSED';
+            this.state = 'closed';
         }
         else
         {
-            this.STATE = 'OPEN';
+            this.state = 'open';
         }
     }
 
