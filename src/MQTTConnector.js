@@ -68,6 +68,7 @@ class MQTTConnector {
             state_closing: "closing",
             state_stopped: "stopped",
             position_template: '{{value_json[\'position\']}}',
+            value_template: '{{value_json[\'cover\']}}',
             unique_id: `am43_${device.id}_cover`,
             device: deviceInfo
         };
