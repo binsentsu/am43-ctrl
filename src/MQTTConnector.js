@@ -49,7 +49,7 @@ class MQTTConnector {
         };
 
         let coverConfig = {
-            name: device.id,
+            name: device.id + ' Cover',
             command_topic: `${deviceTopic}/set`,
             position_topic: `${deviceTopic}/state`,
             set_position_topic: `${deviceTopic}/setposition`,
